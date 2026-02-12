@@ -45,9 +45,16 @@ class _MyHomePageState extends State<MainMenu> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text('IES MARE NOSTRUM'),
+            DrawerHeader(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(
+                    "https://portal.edu.gva.es/iesmarenostrum/wp-content/uploads/sites/1986/2024/05/20240322_113448-Grande.jpg",
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: const Text('IES MARE NOSTRUM'),
             ),
             ListTile(
               title: const Text('Students'),

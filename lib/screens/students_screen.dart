@@ -33,14 +33,14 @@ class _StudentsScreenState extends State<StudentsScreen> {
         title: const Text('Are you sure that you want to delete this Student?'),
         content: Row(
           children: [
-            TextButton(
+            ElevatedButton(
               onPressed: () => {
                 appProvider.deleteStudent(student.id!),
                 Navigator.pop(context),
               },
               child: const Text('Yes'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('No'),
             ),
@@ -50,9 +50,15 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
-  void _showAddDialog(StudentProvider appProvider) {
+  void _showAddDialog(
+    StudentProvider appProvider,
+    CoursProvider coursProvider,
+  ) {
     final nameController = TextEditingController();
     final ageController = TextEditingController();
+
+    var courses = coursProvider.listCourses;
+    Cours? selectedCourse;
 
     showDialog(
       context: this.context,
@@ -79,14 +85,27 @@ class _StudentsScreenState extends State<StudentsScreen> {
               ),
               keyboardType: TextInputType.number,
             ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<Cours>(
+              value: selectedCourse,
+              items: courses?.map<DropdownMenuItem<Cours>>((course) {
+                return DropdownMenuItem<Cours>(
+                  value: course,
+                  child: Text(course.name),
+                );
+              }).toList(),
+              onChanged: (course) {
+                setState(() => selectedCourse = course);
+              },
+            ),
           ],
         ),
         actions: [
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               // Validate input
               if (nameController.text.isEmpty || ageController.text.isEmpty) {
@@ -110,7 +129,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                   name: nameController.text.trim(),
                   age: age,
                   imgUrl: null,
-                  course: null,
+                  course: selectedCourse,
                 ),
               );
 
@@ -131,7 +150,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
     // Definimos la referencia al provider
     var appProvider = Provider.of<StudentProvider>(context);
     var coursProvider = Provider.of<CoursProvider>(context);
-
     var courses = coursProvider.listCourses;
 
     return Scaffold(
@@ -216,14 +234,16 @@ class _StudentsScreenState extends State<StudentsScreen> {
                 ),
               ),
               // Lista
-              Expanded(child: _creaListViewStudents(students, appProvider)),
+              SingleChildScrollView(
+                child: _creaListViewStudents(students, appProvider),
+              ),
             ],
           );
         },
       ),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddDialog(appProvider),
+        onPressed: () => _showAddDialog(appProvider, coursProvider),
         tooltip: 'Add Student',
         child: const Icon(Icons.add),
       ),
@@ -236,6 +256,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
     StudentProvider appProvider,
   ) {
     return ListView.separated(
+      shrinkWrap: true, // IMPORTANTE
+      physics: NeverScrollableScrollPhysics(),
       itemCount: students.length,
       separatorBuilder: (context, index) => const Divider(height: 1),
       itemBuilder: (context, index) {

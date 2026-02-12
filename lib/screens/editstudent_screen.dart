@@ -177,18 +177,18 @@ class _FormEditStudentState extends State<FormEditStudent> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          TextButton(
+                          ElevatedButton(
                             onPressed: () => Navigator.pop(context),
                             child: const Text('Cancel'),
                           ),
 
-                          TextButton(
+                          ElevatedButton(
                             onPressed: () async {
                               if (nameController.text.isEmpty ||
                                   ageController.text.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Campos vacíos'),
+                                    content: Text('Empty fields!'),
                                   ),
                                 );
                                 return;
@@ -199,7 +199,7 @@ class _FormEditStudentState extends State<FormEditStudent> {
                               if (ageInput == null || ageInput <= 0) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Edad no válida'),
+                                    content: Text('Not valid age!'),
                                   ),
                                 );
                                 return;

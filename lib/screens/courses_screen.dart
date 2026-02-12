@@ -76,11 +76,11 @@ class _StudentsScreenState extends State<CoursesScreen> {
           ],
         ),
         actions: [
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               // Validate input
               if (nameController.text.isEmpty || hoursController.text.isEmpty) {
@@ -139,7 +139,9 @@ class _StudentsScreenState extends State<CoursesScreen> {
 
           // Mostramos la lista de estudiantes
           final students = snapshot.data!;
-          return _creaListViewStudents(students, appProvider);
+          return SingleChildScrollView(
+            child: _creaListViewStudents(students, appProvider),
+          );
         },
       ),
 
@@ -156,6 +158,8 @@ class _StudentsScreenState extends State<CoursesScreen> {
     CoursProvider appProvider,
   ) {
     return ListView.separated(
+      shrinkWrap: true, // IMPORTANTE
+      physics: NeverScrollableScrollPhysics(),
       itemCount: courses.length,
       separatorBuilder: (context, index) => const Divider(height: 1),
       itemBuilder: (context, index) {
