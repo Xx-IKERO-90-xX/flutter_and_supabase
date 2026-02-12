@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gestion_alumnos/model/entity/Cours.dart';
 import 'package:gestion_alumnos/model/entity/Student.dart';
+import 'package:gestion_alumnos/provider/cours_provider.dart';
 import 'package:gestion_alumnos/provider/student_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:gestion_alumnos/screens/editstudent_screen.dart';
@@ -16,6 +18,9 @@ class _StudentsScreenState extends State<StudentsScreen> {
   void initState() {
     super.initState();
   }
+
+  String nameFilter = "";
+  Cours? selectedCourse;
 
   void _showDeleteConfirm(
     StudentProvider appProvider,
@@ -120,10 +125,14 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
+  // MainBuild
   @override
   Widget build(BuildContext context) {
     // Definimos la referencia al provider
     var appProvider = Provider.of<StudentProvider>(context);
+    var coursProvider = Provider.of<CoursProvider>(context);
+
+    var courses = coursProvider.listCourses;
 
     return Scaffold(
       body: StreamBuilder<List<Student>>(
@@ -133,7 +142,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
               !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: \${snapshot.error}'));
+            return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(
               child: Text(
@@ -143,9 +152,73 @@ class _StudentsScreenState extends State<StudentsScreen> {
             );
           }
 
-          // Mostramos la lista de estudiantes
-          final students = snapshot.data!;
-          return _creaListViewStudents(students, appProvider);
+          final allStudents = snapshot.data!;
+          final students = allStudents.where((student) {
+            final matchesName = student.name.toLowerCase().contains(
+              nameFilter.toLowerCase(),
+            );
+            final matchesCourse =
+                selectedCourse == null ||
+                student.course?.id == selectedCourse?.id;
+            return matchesName && matchesCourse;
+          }).toList();
+
+          return Column(
+            children: [
+              // Filtros
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextField(
+                        decoration: const InputDecoration(
+                          labelText: "Filter By Name",
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) {
+                          setState(() => nameFilter = value);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      flex: 1,
+                      child: DropdownButtonFormField<Cours>(
+                        value: selectedCourse,
+                        items: courses?.map<DropdownMenuItem<Cours>>((course) {
+                          return DropdownMenuItem<Cours>(
+                            value: course,
+                            child: Text(course.name),
+                          );
+                        }).toList(),
+                        onChanged: (course) {
+                          setState(() => selectedCourse = course);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          setState(() {
+                            nameFilter = "";
+                            selectedCourse = null;
+                          });
+                        },
+                        child: const Text("Clear filters"),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Lista
+              Expanded(child: _creaListViewStudents(students, appProvider)),
+            ],
+          );
         },
       ),
 
@@ -157,6 +230,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
   }
 
+  // Table
   ListView _creaListViewStudents(
     List<Student> students,
     StudentProvider appProvider,

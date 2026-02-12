@@ -20,6 +20,8 @@ class StudentProvider with ChangeNotifier {
 
   List<Student>? get listStudents => _students;
 
+  get listCourses => null;
+
   // Método local para obtener la lista de estudiantes de manera asincrona
   // y notificar a los listeners.
   _getAllStudentsAsync() async {
